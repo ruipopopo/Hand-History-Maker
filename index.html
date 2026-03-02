@@ -6,37 +6,42 @@
     <title>Poker Hand Evaluator & Log</title>
     <style>
         :root { --primary: #2c3e50; --accent: #e74c3c; --bg: #f0f2f5; --success: #27ae60; --dark: #1a252f; --gray: #95a5a6; --allin: #8e44ad; }
-        body { font-family: sans-serif; background: var(--bg); padding: 10px; padding-bottom: 240px; }
+        body { font-family: sans-serif; background: var(--bg); padding: 10px; margin: 0; }
         
-        /* リセットボタンのスタイル */
-        .header-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; max-width: 600px; margin: 0 auto 10px; }
+        .header-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; max-width: 600px; margin: 10px auto; }
         .btn-reset { padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .btn-reset:hover { background: #7f8c8d; }
 
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         h2 { font-size: 1rem; border-left: 4px solid var(--accent); padding-left: 10px; margin: 25px 0 10px; color: var(--primary); background: #fff5f5; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; }
         .pot-badge { font-size: 0.85rem; color: var(--success); font-weight: bold; background: #eafaf1; padding: 2px 8px; border-radius: 4px; border: 1px solid #d5f5e3; }
+        
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
-        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; /* iOSの自動ズーム防止 */ }
+        
         .card-selector { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; background: #eee; padding: 5px; border-radius: 4px; overflow-x: auto; margin-bottom: 10px; }
         .card-btn { padding: 10px 2px; border: 1px solid #ccc; background: white; cursor: pointer; font-size: 0.65rem; text-align: center; border-radius: 3px; min-width: 30px; }
-        .card-btn.selected { background: var(--accent) !important; color: white !important; opacity: 1 !important; }
-        .card-btn.used { background: #f0f0f0; color: #bbb; filter: grayscale(100%); opacity: 0.5; }
+        .card-btn.selected { background: var(--accent) !important; color: white !important; }
+        .card-btn.used { background: #f0f0f0; color: #bbb; opacity: 0.5; }
         .suit-red { color: #e74c3c; }
+
         .action-input-panel { background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 10px; }
         .pos-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-        .pos-chip { padding: 5px 10px; background: #fff; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+        .pos-chip { padding: 8px 12px; background: #fff; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
         .pos-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .type-btn { flex: 1; padding: 8px 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: bold; }
+        
+        .type-btn { flex: 1; padding: 10px 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: bold; }
         .btn-allin { background: var(--allin); color: white; border-color: var(--allin); }
-        .history-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 5px 10px; border-radius: 4px; margin-bottom: 4px; border: 1px solid #eee; font-size: 0.9rem; }
-        .btn-del { color: #ccc; cursor: pointer; font-weight: bold; padding: 0 5px; }
-        .preview-container { position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark); color: #fff; padding: 15px; z-index: 1000; height: 220px; display: flex; flex-direction: column; }
-        pre { flex-grow: 1; white-space: pre-wrap; margin: 0; font-family: monospace; font-size: 0.85rem; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 8px; }
-        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .btn-copy { padding: 8px 25px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        .history-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 8px 10px; border-radius: 4px; margin-bottom: 4px; border: 1px solid #eee; font-size: 0.9rem; }
+        .btn-del { color: #e74c3c; cursor: pointer; font-weight: bold; padding: 5px; font-size: 1.2rem; }
+
+        /* プレビューエリアを最下部（通常フロー）へ移動 */
+        .preview-container { max-width: 600px; margin: 20px auto; background: var(--dark); color: #fff; padding: 15px; border-radius: 12px; }
+        pre { white-space: pre-wrap; margin: 10px 0; font-family: monospace; font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; min-height: 100px; }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; }
+        .btn-copy { padding: 10px 25px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -68,9 +73,9 @@
 <div class="preview-container">
     <div class="preview-header">
         <span>FINAL OUTPUT & RESULT</span>
-        <button class="btn-copy" onclick="copyToClipboard()">コピー</button>
     </div>
     <pre id="output"></pre>
+    <button class="btn-copy" onclick="copyToClipboard()">結果をコピー</button>
 </div>
 
 <script>
@@ -108,15 +113,14 @@
             activePos: {}, 
             showdown: {} 
         };
-        // 各種設定の初期化
         document.getElementById('playerCount').value = 6;
         document.getElementById('sb').value = 1;
         document.getElementById('bb').value = 2;
         document.getElementById('heroStack').value = 200;
         document.getElementById('ante').value = 0;
-        
         initPositions();
         updateUI();
+        window.scrollTo(0, 0);
     }
 
     function fmt(n) { return isNaN(n) ? "0" : Number(n).toLocaleString(); }
@@ -144,10 +148,8 @@
         const sb = parseNum(document.getElementById('sb').value);
         const bb = parseNum(document.getElementById('bb').value);
         const ante = parseNum(document.getElementById('ante').value);
-        
         let pots = { preflop: sb + bb + (ante * pc), flop: 0, turn: 0, river: 0 };
         let runningTotal = pots.preflop;
-
         ['preflop', 'flop', 'turn', 'river'].forEach(s => {
             let streetIn = {};
             gameState.history[s].forEach(h => {
@@ -178,7 +180,6 @@
         const container = document.getElementById('street-sections');
         container.innerHTML = "";
         let survivors = new Set(allPositions);
-
         ['preflop', 'flop', 'turn', 'river'].forEach((s, idx) => {
             if (s !== 'preflop') {
                 const prev = ['preflop', 'flop', 'turn', 'river'][idx-1];
@@ -186,7 +187,6 @@
                 const fld = new Set(gameState.history[prev].filter(h => h.type === 'folds').map(h => h.pos));
                 survivors = new Set([...survivors].filter(p => act.has(p) && !fld.has(p)));
             }
-            
             let sorted;
             if (s === 'preflop') {
                 sorted = [...survivors].sort((a,b) => {
@@ -196,33 +196,25 @@
             } else {
                 sorted = [...survivors].sort((a,b) => POS_ORDER.indexOf(a) - POS_ORDER.indexOf(b));
             }
-            
             const boardSelected = gameState.boards[s]?.length > 0;
             const currentPotValue = idx === 0 ? pots.preflop : pots[['preflop', 'flop', 'turn', 'river'][idx-1]];
-
             if (s !== 'preflop' && !boardSelected) {
                 const bOnly = document.createElement('div');
                 bOnly.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(currentPotValue)}</span></h2><div class="card-selector" id="${s}CardSelector"></div>`;
                 container.appendChild(bOnly);
                 renderBoardSelector(s); return;
             }
-
             const section = document.createElement('div');
-            section.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(currentPotValue)}</span></h2>` + 
-                (s!=='preflop' ? `<div class="card-selector" id="${s}CardSelector"></div>` : '') +
-                `<div class="action-input-panel"><div class="pos-chips" id="${s}-pos"></div><input type="text" id="${s}-amt" placeholder="Amt"><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;" id="${s}-btns"></div></div><div id="${s}-list"></div>`;
+            section.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(currentPotValue)}</span></h2>` + (s!=='preflop' ? `<div class="card-selector" id="${s}CardSelector"></div>` : '') + `<div class="action-input-panel"><div class="pos-chips" id="${s}-pos"></div><input type="number" id="${s}-amt" placeholder="Amount"><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;" id="${s}-btns"></div></div><div id="${s}-list"></div>`;
             container.appendChild(section);
-
             sorted.forEach(p => {
                 const chip = document.createElement('div');
                 chip.className = `pos-chip ${gameState.activePos[s] === p ? 'active' : ''}`;
                 chip.textContent = p; chip.onclick = () => { gameState.activePos[s] = p; updateUI(); };
                 document.getElementById(`${s}-pos`).appendChild(chip);
             });
-
             const hasAggr = gameState.history[s].some(h => ['raises','bets','all-in'].includes(h.type));
             const availableTypes = (s==='preflop' ? ['folds','calls','raises','all-in'] : (!hasAggr ? ['checks','bets','all-in'] : ['folds','calls','raises','all-in']));
-            
             availableTypes.forEach(t => {
                 const btn = document.createElement('button'); 
                 btn.className = 'type-btn' + (t === 'all-in' ? ' btn-allin' : ''); 
@@ -239,7 +231,6 @@
                 };
                 document.getElementById(`${s}-btns`).appendChild(btn);
             });
-
             if(s!=='preflop') renderBoardSelector(s);
             const list = document.getElementById(`${s}-list`);
             gameState.history[s].forEach((h,i) => {
@@ -333,20 +324,17 @@
         const heroPos = document.getElementById('myPosition').value;
         const stack = parseNum(document.getElementById('heroStack').value);
         const sb = parseNum(document.getElementById('sb').value), bb = parseNum(document.getElementById('bb').value), ante = parseNum(document.getElementById('ante').value);
-        
         let investments = {};
         let text = `<Table>\n${pc}-MAX | ${sb}/${bb}(ante:${ante})\n\n`;
-        text += `<Hero>\n${heroPos}  ${gameState.heroHand.join(' ')} Hero ${fmt(stack)}\n\n`;
-
+        text += `<Hero>\n${heroPos} ${gameState.heroHand.join(' ')} Hero ${fmt(stack)}\n\n`;
         ['preflop', 'flop', 'turn', 'river'].forEach((s, idx) => {
             const currentPot = idx === 0 ? pots.preflop : pots[['preflop', 'flop', 'turn', 'river'][idx-1]];
             if(s==='preflop') text += `<Preflop>\n`;
-            else if(gameState.history[s].length>0 || gameState.boards[s].length > 0) text += `<${s.toUpperCase()}>  Pot : ${fmt(currentPot)}\n${gameState.boards[s].join(' ')}\n`;
+            else if(gameState.history[s].length>0 || gameState.boards[s].length > 0) text += `<${s.toUpperCase()}> Pot : ${fmt(currentPot)}\n${gameState.boards[s].join(' ')}\n`;
             else return;
-
             let streetIn = {};
             gameState.history[s].forEach(h => {
-                text += `${h.pos}  ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
+                text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
                 if(h.amt) {
                     const val = parseNum(h.amt);
                     let base = (s==='preflop' && (h.pos==='SB'||h.pos==='BB'||h.pos==='SB/BTN')) ? (h.pos==='BB'?bb:sb) : 0;
@@ -357,7 +345,6 @@
             });
             text += `\n`;
         });
-
         const finalPot = pots.river;
         const board = [...gameState.boards.flop, ...gameState.boards.turn, ...gameState.boards.river];
         if(board.length >= 3) {
@@ -368,23 +355,19 @@
                 const maxR = Math.max(...pts.map(p=>p.eval.rank));
                 const winners = pts.filter(p=>p.eval.rank === maxR).sort((a,b)=>b.eval.score - a.eval.score);
                 const finalWinners = winners.filter(p=>p.eval.score === (winners[0]?winners[0].eval.score:0));
-                
                 text += `<Showdown / Results>\n`;
                 pts.forEach(p => {
                     const isWin = finalWinners.some(w=>w.pos === p.pos);
                     const heroPaid = investments[heroPos] || 0;
-                    
                     if(p.pos === heroPos) {
                         if (isWin) {
                             const winAmt = finalPot / finalWinners.length;
                             const netProfit = winAmt - heroPaid;
-                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name})  Hero-win : ${fmt(winAmt)}(+${fmt(netProfit)})\n`;
+                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-win : ${fmt(winAmt)}(+${fmt(netProfit)})\n`;
                         } else {
-                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name})  Hero-lose : 0(-${fmt(heroPaid)})\n`;
+                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-lose : 0(-${fmt(heroPaid)})\n`;
                         }
-                    } else {
-                        text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name})\n`;
-                    }
+                    } else { text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name})\n`; }
                 });
             }
         }
@@ -392,7 +375,6 @@
     }
 
     function copyToClipboard() { navigator.clipboard.writeText(document.getElementById('output').innerText).then(() => alert("コピーしました！")); }
-    
     const pcSel = document.getElementById('playerCount');
     [10, 9, 8, 7, 6, 5, 4, 3, 2].forEach(i => { let o = document.createElement('option'); o.value=i; o.textContent=i+"人"; if(i==6)o.selected=true; pcSel.appendChild(o); });
     initPositions(); updateUI();
