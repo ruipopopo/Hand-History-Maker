@@ -18,7 +18,7 @@
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
-        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; /* iOSの自動ズーム防止 */ }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
         
         .card-selector { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; background: #eee; padding: 5px; border-radius: 4px; overflow-x: auto; margin-bottom: 10px; }
         .card-btn { padding: 10px 2px; border: 1px solid #ccc; background: white; cursor: pointer; font-size: 0.65rem; text-align: center; border-radius: 3px; min-width: 30px; }
@@ -37,11 +37,9 @@
         .history-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 8px 10px; border-radius: 4px; margin-bottom: 4px; border: 1px solid #eee; font-size: 0.9rem; }
         .btn-del { color: #e74c3c; cursor: pointer; font-weight: bold; padding: 5px; font-size: 1.2rem; }
 
-        /* プレビューエリアを最下部（通常フロー）へ移動 */
         .preview-container { max-width: 600px; margin: 20px auto; background: var(--dark); color: #fff; padding: 15px; border-radius: 12px; }
         pre { white-space: pre-wrap; margin: 10px 0; font-family: monospace; font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; min-height: 100px; }
-        .preview-header { display: flex; justify-content: space-between; align-items: center; }
-        .btn-copy { padding: 10px 25px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .btn-copy { padding: 12px 25px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -71,9 +69,7 @@
 </div>
 
 <div class="preview-container">
-    <div class="preview-header">
-        <span>FINAL OUTPUT & RESULT</span>
-    </div>
+    <div class="preview-header"><span>FINAL OUTPUT & RESULT</span></div>
     <pre id="output"></pre>
     <button class="btn-copy" onclick="copyToClipboard()">結果をコピー</button>
 </div>
@@ -96,28 +92,11 @@
         2: ["SB/BTN","BB"]
     };
 
-    let gameState = { 
-        heroHand: [], 
-        boards: {flop:[], turn:[], river:[]}, 
-        history: {preflop:[], flop:[], turn:[], river:[]}, 
-        activePos: {}, 
-        showdown: {} 
-    };
+    let gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} };
 
     function resetGame() {
         if(!confirm("すべての入力データをリセットしますか？")) return;
-        gameState = { 
-            heroHand: [], 
-            boards: {flop:[], turn:[], river:[]}, 
-            history: {preflop:[], flop:[], turn:[], river:[]}, 
-            activePos: {}, 
-            showdown: {} 
-        };
-        document.getElementById('playerCount').value = 6;
-        document.getElementById('sb').value = 1;
-        document.getElementById('bb').value = 2;
-        document.getElementById('heroStack').value = 200;
-        document.getElementById('ante').value = 0;
+        gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} };
         initPositions();
         updateUI();
         window.scrollTo(0, 0);
@@ -189,23 +168,20 @@
             }
             let sorted;
             if (s === 'preflop') {
-                sorted = [...survivors].sort((a,b) => {
-                    const order = ["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB/BTN","SB","BB"];
-                    return order.indexOf(a) - order.indexOf(b);
-                });
+                const order = ["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB/BTN","SB","BB"];
+                sorted = [...survivors].sort((a,b) => order.indexOf(a) - order.indexOf(b));
             } else {
                 sorted = [...survivors].sort((a,b) => POS_ORDER.indexOf(a) - POS_ORDER.indexOf(b));
             }
-            const boardSelected = gameState.boards[s]?.length > 0;
             const currentPotValue = idx === 0 ? pots.preflop : pots[['preflop', 'flop', 'turn', 'river'][idx-1]];
-            if (s !== 'preflop' && !boardSelected) {
+            if (s !== 'preflop' && gameState.boards[s].length === 0) {
                 const bOnly = document.createElement('div');
                 bOnly.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(currentPotValue)}</span></h2><div class="card-selector" id="${s}CardSelector"></div>`;
                 container.appendChild(bOnly);
                 renderBoardSelector(s); return;
             }
             const section = document.createElement('div');
-            section.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(currentPotValue)}</span></h2>` + (s!=='preflop' ? `<div class="card-selector" id="${s}CardSelector"></div>` : '') + `<div class="action-input-panel"><div class="pos-chips" id="${s}-pos"></div><input type="number" id="${s}-amt" placeholder="Amount"><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;" id="${s}-btns"></div></div><div id="${s}-list"></div>`;
+            section.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(currentPotValue)}</span></h2>` + (s!=='preflop' ? `<div class="card-selector" id="${s}CardSelector"></div>` : '') + `<div class="action-input-panel"><div class="pos-chips" id="${s}-pos"></div><input type="number" id="${s}-amt" placeholder="Amount" inputmode="decimal"><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;" id="${s}-btns"></div></div><div id="${s}-list"></div>`;
             container.appendChild(section);
             sorted.forEach(p => {
                 const chip = document.createElement('div');
@@ -323,49 +299,91 @@
         const pc = parseInt(document.getElementById('playerCount').value);
         const heroPos = document.getElementById('myPosition').value;
         const stack = parseNum(document.getElementById('heroStack').value);
-        const sb = parseNum(document.getElementById('sb').value), bb = parseNum(document.getElementById('bb').value), ante = parseNum(document.getElementById('ante').value);
+        const sb = parseNum(document.getElementById('sb').value);
+        const bb = parseNum(document.getElementById('bb').value);
+        const ante = parseNum(document.getElementById('ante').value);
+        
         let investments = {};
+        const positions = POS_DATA[pc];
+        positions.forEach(p => investments[p] = ante);
+        if (pc === 2) {
+            investments["SB/BTN"] = (investments["SB/BTN"] || 0) + sb;
+            investments["BB"] = (investments["BB"] || 0) + bb;
+        } else {
+            investments["SB"] = (investments["SB"] || 0) + (positions.includes("SB") ? sb : 0);
+            investments["BB"] = (investments["BB"] || 0) + (positions.includes("BB") ? bb : 0);
+        }
+
         let text = `<Table>\n${pc}-MAX | ${sb}/${bb}(ante:${ante})\n\n`;
         text += `<Hero>\n${heroPos} ${gameState.heroHand.join(' ')} Hero ${fmt(stack)}\n\n`;
+
         ['preflop', 'flop', 'turn', 'river'].forEach((s, idx) => {
             const currentPot = idx === 0 ? pots.preflop : pots[['preflop', 'flop', 'turn', 'river'][idx-1]];
             if(s==='preflop') text += `<Preflop>\n`;
             else if(gameState.history[s].length>0 || gameState.boards[s].length > 0) text += `<${s.toUpperCase()}> Pot : ${fmt(currentPot)}\n${gameState.boards[s].join(' ')}\n`;
             else return;
+
             let streetIn = {};
-            gameState.history[s].forEach(h => {
-                text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
-                if(h.amt) {
+            const historyPosSet = new Set(gameState.history[s].map(h => h.pos));
+
+            if(s === 'preflop') {
+                // プリフロップは全員分のアクションを順に出力
+                const order = ["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB/BTN","SB","BB"];
+                const sortedAll = positions.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+                
+                sortedAll.forEach(pos => {
+                    const entries = gameState.history[s].filter(h => h.pos === pos);
+                    if(entries.length > 0) {
+                        entries.forEach(h => {
+                            text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
+                            const val = parseNum(h.amt);
+                            let alreadyPaid = 0;
+                            if (h.pos === 'BB') alreadyPaid = bb;
+                            else if (h.pos === 'SB' || h.pos === 'SB/BTN') alreadyPaid = sb;
+                            const inc = Math.max(0, val - (streetIn[h.pos] || alreadyPaid));
+                            investments[h.pos] = (investments[h.pos] || 0) + inc;
+                            streetIn[h.pos] = val;
+                        });
+                    } else {
+                        // アクションがないポジションは folds (SB/BB以外)
+                        if(pos !== 'SB' && pos !== 'BB' && pos !== 'SB/BTN') {
+                            text += `${pos} folds\n`;
+                        }
+                    }
+                });
+            } else {
+                // ポストフロップは入力されたアクションのみ
+                gameState.history[s].forEach(h => {
+                    text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
                     const val = parseNum(h.amt);
-                    let base = (s==='preflop' && (h.pos==='SB'||h.pos==='BB'||h.pos==='SB/BTN')) ? (h.pos==='BB'?bb:sb) : 0;
-                    const add = Math.max(0, val - (streetIn[h.pos]||base));
+                    const inc = Math.max(0, val - (streetIn[h.pos] || 0));
+                    investments[h.pos] = (investments[h.pos] || 0) + inc;
                     streetIn[h.pos] = val;
-                    investments[h.pos] = (investments[h.pos]||0) + add;
-                }
-            });
+                });
+            }
             text += `\n`;
         });
-        const finalPot = pots.river;
+
         const board = [...gameState.boards.flop, ...gameState.boards.turn, ...gameState.boards.river];
         if(board.length >= 3) {
             let pts = [{pos: heroPos, hand: gameState.heroHand}];
-            Object.keys(gameState.showdown).forEach(p => { if(gameState.showdown[p].hand.length===2) pts.push({pos:p, hand:gameState.showdown[p].hand}); });
+            Object.keys(gameState.showdown).forEach(p => { if(gameState.showdown[p].hand?.length === 2) pts.push({pos:p, hand:gameState.showdown[p].hand}); });
             if(pts.length >= 1) {
                 pts.forEach(p => p.eval = evaluateHand([...p.hand, ...board]));
                 const maxR = Math.max(...pts.map(p=>p.eval.rank));
-                const winners = pts.filter(p=>p.eval.rank === maxR).sort((a,b)=>b.eval.score - a.eval.score);
-                const finalWinners = winners.filter(p=>p.eval.score === (winners[0]?winners[0].eval.score:0));
+                const winnersAtRank = pts.filter(p=>p.eval.rank === maxR).sort((a,b)=>b.eval.score - a.eval.score);
+                const finalWinners = winnersAtRank.filter(p=>p.eval.score === winnersAtRank[0].eval.score);
+                const finalPot = calculateCurrentPot().river;
                 text += `<Showdown / Results>\n`;
                 pts.forEach(p => {
-                    const isWin = finalWinners.some(w=>w.pos === p.pos);
-                    const heroPaid = investments[heroPos] || 0;
+                    const isWin = finalWinners.some(w => w.pos === p.pos);
+                    const totalPaid = investments[p.pos] || 0;
                     if(p.pos === heroPos) {
                         if (isWin) {
                             const winAmt = finalPot / finalWinners.length;
-                            const netProfit = winAmt - heroPaid;
-                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-win : ${fmt(winAmt)}(+${fmt(netProfit)})\n`;
+                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-win : ${fmt(winAmt)}(+${fmt(winAmt - totalPaid)})\n`;
                         } else {
-                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-lose : 0(-${fmt(heroPaid)})\n`;
+                            text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-lose : 0(-${fmt(totalPaid)})\n`;
                         }
                     } else { text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name})\n`; }
                 });
