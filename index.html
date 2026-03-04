@@ -3,50 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Hand Evaluator & Log</title>
+    <title>Poker Evaluator Pro - Full Version</title>
     <style>
         :root { --primary: #2c3e50; --accent: #e74c3c; --bg: #f0f2f5; --success: #27ae60; --dark: #1a252f; --gray: #95a5a6; --allin: #8e44ad; }
         body { font-family: sans-serif; background: var(--bg); padding: 10px; margin: 0; }
-        
-        /* ヘッダーとボタン */
         .header-bar { display: flex; justify-content: flex-end; gap: 10px; max-width: 600px; margin: 10px auto; }
         .btn-reset { padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
         .btn-help { width: 32px; height: 32px; background: var(--primary); color: white; border: none; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
-
-        /* モーダル */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 15% auto; padding: 20px; border-radius: 12px; max-width: 85%; line-height: 1.6; }
-        .modal-content h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 5px; }
-        .modal-content ul { padding-left: 20px; font-size: 0.9rem; }
         .btn-close-modal { display: block; width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 6px; margin-top: 15px; cursor: pointer; }
-
-        /* メインUIパーツ */
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { font-size: 1rem; border-left: 4px solid var(--accent); padding-left: 10px; margin: 25px 0 10px; color: var(--primary); background: #fff5f5; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .pot-badge { font-size: 0.85rem; color: var(--success); font-weight: bold; background: #eafaf1; padding: 2px 8px; border-radius: 4px; border: 1px solid #d5f5e3; }
-        
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
+        h2 { font-size: 1rem; border-left: 4px solid var(--accent); padding-left: 10px; margin: 25px 0 10px; color: var(--primary); background: #fff5f5; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; }
+        .pot-label { font-size: 0.85rem; color: var(--success); font-weight: bold; background: #eafaf1; padding: 2px 8px; border-radius: 4px; border: 1px solid #d5f5e3; }
+        .grid-config { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; }
         select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        
         .card-selector { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; background: #eee; padding: 5px; border-radius: 4px; overflow-x: auto; margin-bottom: 10px; }
         .card-btn { padding: 10px 2px; border: 1px solid #ccc; background: white; cursor: pointer; font-size: 0.65rem; text-align: center; border-radius: 3px; min-width: 30px; }
         .card-btn.selected { background: var(--accent) !important; color: white !important; }
         .card-btn.used { background: #f0f0f0; color: #bbb; opacity: 0.5; }
         .suit-red { color: #e74c3c; }
-
         .action-input-panel { background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 10px; }
         .pos-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
         .pos-chip { padding: 8px 12px; background: #fff; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
         .pos-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
         .type-btn { flex: 1; padding: 10px 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: bold; }
         .btn-allin { background: var(--allin); color: white; border-color: var(--allin); }
-        
         .history-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 8px 10px; border-radius: 4px; margin-bottom: 4px; border: 1px solid #eee; font-size: 0.9rem; }
         .btn-del { color: #e74c3c; cursor: pointer; font-weight: bold; padding: 5px; font-size: 1.2rem; }
-
         .preview-container { max-width: 600px; margin: 20px auto; background: var(--dark); color: #fff; padding: 15px; border-radius: 12px; }
         pre { white-space: pre-wrap; margin: 10px 0; font-family: monospace; font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; min-height: 100px; }
         .btn-copy { padding: 12px 25px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 1rem; }
@@ -61,7 +47,7 @@
 
 <div id="helpModal" class="modal">
     <div class="modal-content">
-        <h3>使いかた</h3>
+        <h3>使い方</h3>
         <ul>
             <li><b>基本設定:</b> 人数、ブラインド、自分のポジションを選択する。</li>
             <li><b>Hero Hand:</b> 自分の手札2枚を選択する。</li>
@@ -69,33 +55,36 @@
             <li><b>Preflop:</b> 入力がないプレイヤーは自動でfoldsとして扱われる。</li>
             <li><b>Board:</b> 各ストリートのカードを選ぶと次の入力欄が表示される。</li>
             <li><b>Showdown:</b> 相手の手札を入力すると役判定と収支が自動で計算される。</li>
+           <li><b>ショートスタックでのコール:</b> 相手のBetに対してコールする側のスタックが足りない場合は数値を入力してからCALLSを押す。</li>
         </ul>
         <button class="btn-close-modal" onclick="toggleModal(false)">とじる</button>
     </div>
 </div>
 
 <div class="container">
-    <div class="grid-3">
+    <div class="grid-config">
         <div class="form-group"><label>人数</label><select id="playerCount" onchange="initPositions(); updateUI();"></select></div>
-        <div class="form-group"><label>SB/BB</label><div style="display:flex; gap:2px"><input type="number" id="sb" value="1" oninput="updateUI()"><input type="number" id="bb" value="2" oninput="updateUI()"></div></div>
-        <div class="form-group"><label>Hero Stack</label><input type="number" id="heroStack" value="200" oninput="updateUI()"></div>
+        <div class="form-group"><label>SB / BB</label>
+            <div style="display:flex; gap:2px"><input type="number" id="sb" value="1" oninput="updateUI()"><input type="number" id="bb" value="2" oninput="updateUI()"></div>
+        </div>
+        <div class="form-group"><label>Ante</label><input type="number" id="ante" value="0" oninput="updateUI()"></div>
     </div>
-    <div class="form-group"><label>Ante</label><input type="number" id="ante" value="0" oninput="updateUI()"></div>
-    <div class="form-group"><label>自分のポジション</label><select id="myPosition" onchange="updateUI()"></select></div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div class="form-group"><label>Hero Stack</label><input type="number" id="heroStack" value="200" oninput="updateUI()"></div>
+        <div class="form-group"><label>Hero Pos</label><select id="myPosition" onchange="updateUI()"></select></div>
+    </div>
     
     <h2>Hero Hand</h2>
     <div class="card-selector" id="heroCardSelector"></div>
-
     <div id="street-sections"></div>
-
     <div id="showdown-logic-section">
-        <h2>Showdown Hand Selection</h2>
+        <h2>Showdown Result</h2>
         <div id="showdown-hand-inputs"></div>
     </div>
 </div>
 
 <div class="preview-container">
-    <div class="preview-header"><span>FINAL OUTPUT & RESULT</span></div>
     <pre id="output"></pre>
     <button class="btn-copy" onclick="copyToClipboard()">結果をコピー</button>
 </div>
@@ -104,135 +93,218 @@
     const suits = [{s:'♠', v:1}, {s:'♥', v:2, c:'suit-red'}, {s:'♦', v:3, c:'suit-red'}, {s:'♣', v:4}];
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
     const rankValue = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
-    
-    const POS_ORDER = ["SB/BTN","SB","BB","UTG","UTG+1","UTG+2","UTG+3","MP","MP1","MP2","HJ","CO","BTN"];
-    const POS_DATA = {
-        10:["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB","BB"],
-        9: ["UTG","UTG+1","UTG+2","MP","HJ","CO","BTN","SB","BB"],
-        8: ["UTG","UTG+1","MP","HJ","CO","BTN","SB","BB"],
-        7: ["UTG","MP","HJ","CO","BTN","SB","BB"],
-        6: ["UTG","MP","CO","BTN","SB","BB"],
-        5: ["UTG","CO","BTN","SB","BB"],
-        4: ["UTG","BTN","SB","BB"],
-        3: ["BTN","SB","BB"],
-        2: ["SB/BTN","BB"]
-    };
+    const PREFLOP_ORDER = ["UTG","UTG+1","UTG+2","UTG+3","MP","MP1","MP2","HJ","CO","BTN","SB/BTN","SB","BB"];
+    const POSTFLOP_ORDER = ["SB/BTN","SB","BB","UTG","UTG+1","UTG+2","UTG+3","MP","MP1","MP2","HJ","CO","BTN"];
+    const POS_DATA = { 10:["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB","BB"], 9:["UTG","UTG+1","UTG+2","MP","HJ","CO","BTN","SB","BB"], 8:["UTG","UTG+1","MP","HJ","CO","BTN","SB","BB"], 7:["UTG","MP","HJ","CO","BTN","SB","BB"], 6:["UTG","MP","CO","BTN","SB","BB"], 5:["UTG","CO","BTN","SB","BB"], 4:["UTG","BTN","SB","BB"], 3:["BTN","SB","BB"], 2:["SB/BTN","BB"] };
 
     let gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} };
 
     function toggleModal(show) { document.getElementById('helpModal').style.display = show ? 'block' : 'none'; }
-    window.onclick = function(event) { if (event.target == document.getElementById('helpModal')) toggleModal(false); }
-
-    function resetGame() {
-        if(!confirm("データをリセットしますか？")) return;
-        gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} };
-        initPositions(); updateUI(); window.scrollTo(0, 0);
-    }
-
-    function fmt(n) { return isNaN(n) ? "0" : Number(n).toLocaleString(); }
+    function resetGame() { if(!confirm("リセットしますか？")) return; gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} }; initPositions(); updateUI(); }
+    function fmt(n) { return isNaN(n) ? "0" : Math.floor(n).toLocaleString(); }
     function parseNum(s) { return s ? parseFloat(s.toString().replace(/,/g,'')) || 0 : 0; }
-
-    function getAllUsedCards() {
-        let u = [...gameState.heroHand, ...gameState.boards.flop, ...gameState.boards.turn, ...gameState.boards.river];
-        Object.values(gameState.showdown).forEach(p => u.push(...(p.hand||[])));
-        return u;
-    }
+    function getAllUsedCards() { let u = [...gameState.heroHand, ...gameState.boards.flop, ...gameState.boards.turn, ...gameState.boards.river]; Object.values(gameState.showdown).forEach(p => u.push(...(p.hand||[]))); return u; }
 
     function initPositions() {
-        const c = parseInt(document.getElementById('playerCount').value);
-        const positions = POS_DATA[c];
+        const pc = parseInt(document.getElementById('playerCount').value);
         const sel = document.getElementById('myPosition');
         const last = sel.value; sel.innerHTML = "";
-        positions.forEach(p => {
-            const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
-            if(p===last) opt.selected = true; sel.appendChild(opt);
-        });
+        POS_DATA[pc].forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; if(p===last) opt.selected = true; sel.appendChild(opt); });
     }
 
-    function calculateCurrentPot() {
+    function calculateInvestmentsByStreet() {
         const pc = parseInt(document.getElementById('playerCount').value);
         const sb = parseNum(document.getElementById('sb').value);
         const bb = parseNum(document.getElementById('bb').value);
         const ante = parseNum(document.getElementById('ante').value);
-        let pots = { preflop: sb + bb + (ante * pc), flop: 0, turn: 0, river: 0 };
-        let runningTotal = pots.preflop;
+        let streetPots = { preflop: (ante * pc) + sb + bb, flop: 0, turn: 0, river: 0 };
+        let totalInv = {};
+        POS_DATA[pc].forEach(p => totalInv[p] = ante);
+        if (pc === 2) { totalInv["SB/BTN"] += sb; totalInv["BB"] += bb; } else { if(totalInv["SB"]!==undefined) totalInv["SB"] += sb; if(totalInv["BB"]!==undefined) totalInv["BB"] += bb; }
+        let runningPot = streetPots.preflop;
         ['preflop', 'flop', 'turn', 'river'].forEach(s => {
             let streetIn = {};
+            let streetAdded = 0;
             gameState.history[s].forEach(h => {
                 if(h.amt) {
                     const val = parseNum(h.amt);
                     let base = (s==='preflop' && (h.pos==='SB'||h.pos==='BB'||h.pos==='SB/BTN')) ? (h.pos==='BB'?bb:sb) : 0;
-                    const add = Math.max(0, val - (streetIn[h.pos]||base));
-                    runningTotal += add; streetIn[h.pos] = val;
+                    const diff = Math.max(0, val - (streetIn[h.pos]||base));
+                    totalInv[h.pos] = (totalInv[h.pos]||0) + diff;
+                    streetIn[h.pos] = val; streetAdded += diff;
                 }
             });
-            pots[s] = runningTotal;
+            if(s === 'preflop') { runningPot += streetAdded; streetPots.flop = runningPot; }
+            else if(s === 'flop') { runningPot += streetAdded; streetPots.turn = runningPot; }
+            else if(s === 'turn') { runningPot += streetAdded; streetPots.river = runningPot; }
+            else if(s === 'river') { runningPot += streetAdded; streetPots.final = runningPot; }
         });
-        return pots;
+        if(!streetPots.final) streetPots.final = runningPot;
+        return { totalInv, streetPots };
     }
 
     function updateUI() {
         const c = parseInt(document.getElementById('playerCount').value);
-        const positions = POS_DATA[c];
-        const pots = calculateCurrentPot();
-        renderHeroSelector(); renderStreetSections(positions, pots); renderShowdownInputs(positions); generateText(pots);
+        renderHeroSelector(); 
+        renderStreetSections(POS_DATA[c]); 
+        renderShowdownInputs(POS_DATA[c]); 
+        generateText();
     }
 
-    function renderStreetSections(allPositions, pots) {
+    function renderStreetSections(allPositions) {
         const container = document.getElementById('street-sections'); container.innerHTML = "";
+        const { streetPots } = calculateInvestmentsByStreet();
         let survivors = new Set(allPositions);
+        
         ['preflop', 'flop', 'turn', 'river'].forEach((s, idx) => {
-            if (s !== 'preflop') {
+            if (idx > 0) {
                 const prev = ['preflop', 'flop', 'turn', 'river'][idx-1];
                 const act = new Set(gameState.history[prev].map(h => h.pos));
                 const fld = new Set(gameState.history[prev].filter(h => h.type === 'folds').map(h => h.pos));
                 survivors = new Set([...survivors].filter(p => act.has(p) && !fld.has(p)));
             }
-            let sorted;
-            if (s === 'preflop') {
-                const order = ["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB/BTN","SB","BB"];
-                sorted = [...survivors].sort((a,b) => order.indexOf(a) - order.indexOf(b));
-            } else {
-                sorted = [...survivors].sort((a,b) => POS_ORDER.indexOf(a) - POS_ORDER.indexOf(b));
-            }
-            const curPot = idx === 0 ? pots.preflop : pots[['preflop', 'flop', 'turn', 'river'][idx-1]];
             if (s !== 'preflop' && gameState.boards[s].length === 0) {
                 const bOnly = document.createElement('div');
-                bOnly.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(curPot)}</span></h2><div class="card-selector" id="${s}CardSelector"></div>`;
+                bOnly.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-label">Pot: ${fmt(streetPots[s])}</span></h2><div class="card-selector" id="${s}CardSelector"></div>`;
                 container.appendChild(bOnly); renderBoardSelector(s); return;
             }
             const section = document.createElement('div');
-            section.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-badge">Pot: ${fmt(curPot)}</span></h2>` + (s!=='preflop' ? `<div class="card-selector" id="${s}CardSelector"></div>` : '') + `<div class="action-input-panel"><div class="pos-chips" id="${s}-pos"></div><input type="number" id="${s}-amt" placeholder="Amount" inputmode="decimal"><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;" id="${s}-btns"></div></div><div id="${s}-list"></div>`;
+            section.innerHTML = `<h2>${s.toUpperCase()} <span class="pot-label">Pot: ${fmt(streetPots[s])}</span></h2>` + (s!=='preflop' ? `<div class="card-selector" id="${s}CardSelector"></div>` : '') + `<div class="action-input-panel"><div class="pos-chips" id="${s}-pos"></div><input type="number" id="${s}-amt" placeholder="Amt" inputmode="decimal"><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;" id="${s}-btns"></div></div><div id="${s}-list"></div>`;
             container.appendChild(section);
-            sorted.forEach(p => {
+            
+            const orderRef = (s === 'preflop') ? PREFLOP_ORDER : POSTFLOP_ORDER;
+            [...survivors].sort((a,b)=>orderRef.indexOf(a)-orderRef.indexOf(b)).forEach(p => {
                 const chip = document.createElement('div'); chip.className = `pos-chip ${gameState.activePos[s] === p ? 'active' : ''}`;
                 chip.textContent = p; chip.onclick = () => { gameState.activePos[s] = p; updateUI(); };
                 document.getElementById(`${s}-pos`).appendChild(chip);
             });
-            const hasAggr = gameState.history[s].some(h => ['raises','bets','all-in'].includes(h.type));
-            const availableTypes = (s==='preflop' ? ['folds','calls','raises','all-in'] : (!hasAggr ? ['checks','bets','all-in'] : ['folds','calls','raises','all-in']));
-            availableTypes.forEach(t => {
+
+            const history = gameState.history[s];
+            const hasAgg = history.some(h => ['bets','raises','all-in'].includes(h.type));
+            let available = (s === 'preflop' || hasAgg) ? ['folds','calls','raises','all-in'] : ['checks','bets','all-in'];
+
+            available.forEach(t => {
                 const btn = document.createElement('button'); btn.className = 'type-btn' + (t === 'all-in' ? ' btn-allin' : ''); btn.textContent = t.toUpperCase();
                 btn.onclick = () => {
                     const pos = gameState.activePos[s]; if(!pos) return;
-                    let amt = document.getElementById(`${s}-amt`).value;
-                    if(t==='calls') {
-                        let last = 0; gameState.history[s].forEach(h => { if(['bets','raises','all-in'].includes(h.type)) last = parseNum(h.amt); });
+                    let inputEl = document.getElementById(`${s}-amt`); let inputAmt = inputEl.value; let finalAmt = inputAmt;
+                    if(t==='calls' && !inputAmt) {
+                        let last = 0; history.forEach(h => { if(['bets','raises','all-in'].includes(h.type)) last = parseNum(h.amt); });
                         if(last===0 && s==='preflop') last = parseNum(document.getElementById('bb').value);
-                        amt = last;
+                        finalAmt = last;
                     }
-                    gameState.history[s].push({pos, type:t, amt}); updateUI();
-                };
-                document.getElementById(`${s}-btns`).appendChild(btn);
+                    gameState.history[s].push({pos, type:t, amt:finalAmt}); inputEl.value = ""; updateUI();
+                }; document.getElementById(`${s}-btns`).appendChild(btn);
             });
             if(s!=='preflop') renderBoardSelector(s);
-            const list = document.getElementById(`${s}-list`);
             gameState.history[s].forEach((h,i) => {
-                list.innerHTML += `<div class="history-item"><span><b>${h.pos}</b> ${h.type} ${h.amt ? fmt(h.amt) : ''}</span><span class="btn-del" onclick="gameState.history['${s}'].splice(${i},1); updateUI();">×</span></div>`;
+                document.getElementById(`${s}-list`).innerHTML += `<div class="history-item"><span><b>${h.pos}</b> ${h.type} ${h.amt ? fmt(h.amt) : ''}</span><span class="btn-del" onclick="gameState.history['${s}'].splice(${i},1); updateUI();">×</span></div>`;
             });
         });
     }
 
+    function evaluateHand(cards) {
+        if (cards.length < 5) return {rank:0, score:0, name:""};
+        const vMap = cards.map(c => ({v: rankValue[c[0]], s: c.slice(-1)}));
+        const counts = vMap.reduce((a,b)=>{a[b.v]=(a[b.v]||0)+1; return a;},{});
+        const suitsCount = vMap.reduce((a,b)=>{a[b.s]=(a[b.s]||0)+1; return a;},{});
+
+        let bestSF = -1;
+        for (let s in suitsCount) {
+            if (suitsCount[s] >= 5) {
+                const sCards = vMap.filter(c => c.s === s).map(c => c.v).sort((a,b)=>b-a);
+                const uV = [...new Set(sCards)];
+                for (let i=0; i<=uV.length-5; i++) if (uV[i] - uV[i+4] === 4) { bestSF = Math.max(bestSF, uV[i]); break; }
+                if (bestSF === -1 && [14,5,4,3,2].every(v => uV.includes(v))) bestSF = 5;
+            }
+        }
+        if (bestSF > 0) return bestSF === 14 ? {rank:10, score:14, name:"Royal Flush"} : {rank:9, score:bestSF, name:"Straight Flush"};
+
+        const quads = Object.entries(counts).find(e => e[1] === 4);
+        if (quads) return {rank:8, score:Number(quads[0]), name:"Four of a Kind"};
+
+        const trips = Object.entries(counts).filter(e => e[1] === 3).sort((a,b)=>b[0]-a[0]);
+        const pairs = Object.entries(counts).filter(e => e[1] >= 2).sort((a,b)=>b[0]-a[0]);
+        if (trips.length > 0 && pairs.length > 1) return {rank:7, score:Number(trips[0][0]), name:"Full House"};
+
+        const fS = Object.entries(suitsCount).find(e => e[1] >= 5);
+        if (fS) return {rank:6, score:vMap.filter(c => c.s === fS[0]).map(c => c.v).sort((a,b)=>b-a)[0], name:"Flush"};
+
+        const uV = [...new Set(vMap.map(c => c.v))].sort((a,b)=>b-a);
+        let bestS = -1;
+        for (let i=0; i<=uV.length-5; i++) if (uV[i] - uV[i+4] === 4) { bestS = uV[i]; break; }
+        if (bestS === -1 && [14,5,4,3,2].every(v => uV.includes(v))) bestS = 5;
+        if (bestS > 0) return {rank:5, score:bestS, name:"Straight"};
+
+        if (trips.length > 0) return {rank:4, score:Number(trips[0][0]), name:"Three of a Kind"};
+        if (pairs.length >= 2) return {rank:3, score:Number(pairs[0][0]), name:"Two Pair"};
+        if (pairs.length === 1) return {rank:2, score:Number(pairs[0][0]), name:"One Pair"};
+        return {rank:1, score:uV[0], name:"High Card"};
+    }
+
+    function generateText() {
+        const pc = parseInt(document.getElementById('playerCount').value);
+        const heroPos = document.getElementById('myPosition').value;
+        const { totalInv, streetPots } = calculateInvestmentsByStreet();
+        let text = `<Table>\n${pc}-MAX | Pot:${fmt(streetPots.final)}\n\n<Hero>\n${heroPos} ${gameState.heroHand.join(' ')}\n\n`;
+
+        ['preflop', 'flop', 'turn', 'river'].forEach(s => {
+            const curPot = streetPots[s];
+            if(s==='preflop') text += `<Preflop> Pot:${fmt(curPot)}\n`;
+            else if(gameState.history[s].length>0 || gameState.boards[s].length > 0) text += `<${s.toUpperCase()}> Pot:${fmt(curPot)}\n${gameState.boards[s].join(' ')}\n`;
+            else return;
+
+            if(s === 'preflop') {
+                const posArr = POS_DATA[pc];
+                const sorted = PREFLOP_ORDER.filter(p => posArr.includes(p));
+                sorted.forEach(p => {
+                    const acts = gameState.history[s].filter(h => h.pos === p);
+                    if(acts.length > 0) acts.forEach(h => { text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`; });
+                    else if(p !== 'BB') text += `${p} folds\n`;
+                });
+            } else {
+                gameState.history[s].forEach(h => { text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`; });
+            }
+            text += `\n`;
+        });
+
+        const board = [...gameState.boards.flop, ...gameState.boards.turn, ...gameState.boards.river];
+        if(board.length >= 3) {
+            let players = [{pos: heroPos, hand: gameState.heroHand, inv: totalInv[heroPos]||0}];
+            Object.keys(gameState.showdown).forEach(p => { if(gameState.showdown[p].hand?.length === 2) players.push({pos:p, hand:gameState.showdown[p].hand, inv: totalInv[p]||0}); });
+            players.forEach(p => p.eval = evaluateHand([...p.hand, ...board]));
+            players.sort((a,b) => b.eval.rank - a.eval.rank || b.eval.score - a.eval.score);
+            let tempInv = {...totalInv}; let playerResults = {};
+            players.forEach(p => {
+                let winAmt = 0;
+                Object.keys(tempInv).forEach(other => { let take = Math.min(tempInv[other], totalInv[p.pos]); winAmt += take; tempInv[other] -= take; });
+                playerResults[p.pos] = winAmt;
+            });
+            text += `<Showdown / Results>\n`;
+            players.forEach(p => {
+                const profit = (playerResults[p.pos] || 0) - (totalInv[p.pos] || 0);
+                text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) ${p.pos===heroPos ? 'Hero ' : ''}${profit>=0?'+':''}${fmt(profit)}\n`;
+            });
+        }
+        document.getElementById('output').innerText = text.trim();
+    }
+
+    function renderHeroSelector() {
+        const el = document.getElementById('heroCardSelector'); el.innerHTML = ""; const used = getAllUsedCards();
+        suits.forEach(suit => ranks.forEach(rank => {
+            const c = rank + suit.s; const isSel = gameState.heroHand.includes(c);
+            const btn = document.createElement('div'); btn.className = `card-btn ${suit.c} ${isSel?'selected':''} ${used.includes(c)&&!isSel?'used':''}`;
+            btn.textContent = c; btn.onclick = () => { if(isSel) gameState.heroHand.splice(gameState.heroHand.indexOf(c),1); else if(gameState.heroHand.length<2) gameState.heroHand.push(c); updateUI(); }; el.appendChild(btn);
+        }));
+    }
+    function renderBoardSelector(s) {
+        const el = document.getElementById(`${s}CardSelector`); if(!el) return; el.innerHTML = ""; const used = getAllUsedCards();
+        suits.forEach(suit => ranks.forEach(rank => {
+            const c = rank + suit.s; const isSel = gameState.boards[s].includes(c);
+            const btn = document.createElement('div'); btn.className = `card-btn ${suit.c} ${isSel?'selected':''} ${used.includes(c)&&!isSel?'used':''}`;
+            btn.textContent = c; btn.onclick = () => { if(isSel) gameState.boards[s].splice(gameState.boards[s].indexOf(c),1); else if(gameState.boards[s].length < (s==='flop'?3:1)) gameState.boards[s].push(c); updateUI(); }; el.appendChild(btn);
+        }));
+    }
     function renderShowdownInputs(allPositions) {
         const last = gameState.boards.river.length>0 ? 'river' : (gameState.boards.turn.length>0 ? 'turn' : 'flop');
         const act = new Set(gameState.history[last]?.map(h=>h.pos)||[]);
@@ -243,150 +315,18 @@
         survivors.forEach(p => {
             if(p === heroPos) return;
             if(!gameState.showdown[p]) gameState.showdown[p] = { hand: [] };
-            const div = document.createElement('div'); div.innerHTML = `<label>${p} Hand Selection</label><div class="card-selector" id="sd-cards-${p}"></div>`;
+            const div = document.createElement('div'); div.innerHTML = `<label>${p} Hand</label><div class="card-selector" id="sd-cards-${p}"></div>`;
             container.appendChild(div);
             const el = document.getElementById(`sd-cards-${p}`); const used = getAllUsedCards();
             suits.forEach(suit => ranks.forEach(rank => {
                 const c = rank + suit.s; const isSel = gameState.showdown[p].hand.includes(c);
                 const btn = document.createElement('div'); btn.className = `card-btn ${suit.c} ${isSel?'selected':''} ${used.includes(c)&&!isSel?'used':''}`;
-                btn.textContent = c; btn.onclick = () => {
-                    if(isSel) gameState.showdown[p].hand.splice(gameState.showdown[p].hand.indexOf(c),1);
-                    else if(gameState.showdown[p].hand.length<2) gameState.showdown[p].hand.push(c);
-                    updateUI();
-                }; el.appendChild(btn);
+                btn.textContent = c; btn.onclick = () => { if(isSel) gameState.showdown[p].hand.splice(gameState.showdown[p].hand.indexOf(c),1); else if(gameState.showdown[p].hand.length<2) gameState.showdown[p].hand.push(c); updateUI(); }; el.appendChild(btn);
             }));
         });
     }
-
-    function renderHeroSelector() {
-        const el = document.getElementById('heroCardSelector'); el.innerHTML = "";
-        const used = getAllUsedCards();
-        suits.forEach(suit => ranks.forEach(rank => {
-            const c = rank + suit.s; const isSel = gameState.heroHand.includes(c);
-            const btn = document.createElement('div'); btn.className = `card-btn ${suit.c} ${isSel?'selected':''} ${used.includes(c)&&!isSel?'used':''}`;
-            btn.textContent = c; btn.onclick = () => {
-                if(isSel) gameState.heroHand.splice(gameState.heroHand.indexOf(c),1);
-                else if(gameState.heroHand.length<2) gameState.heroHand.push(c);
-                updateUI();
-            }; el.appendChild(btn);
-        }));
-    }
-
-    function renderBoardSelector(s) {
-        const el = document.getElementById(`${s}CardSelector`); if(!el) return;
-        el.innerHTML = ""; const used = getAllUsedCards();
-        suits.forEach(suit => ranks.forEach(rank => {
-            const c = rank + suit.s; const isSel = gameState.boards[s].includes(c);
-            const btn = document.createElement('div'); btn.className = `card-btn ${suit.c} ${isSel?'selected':''} ${used.includes(c)&&!isSel?'used':''}`;
-            btn.textContent = c; btn.onclick = () => {
-                if(isSel) gameState.boards[s].splice(gameState.boards[s].indexOf(c),1);
-                else if(gameState.boards[s].length < (s==='flop'?3:1)) gameState.boards[s].push(c);
-                updateUI();
-            }; el.appendChild(btn);
-        }));
-    }
-
-    function evaluateHand(cards) {
-        if (cards.length < 5) return {rank:0, score:0, name:""};
-        const suitsVal = cards.map(c => c.slice(-1));
-        const vals = cards.map(c => rankValue[c[0]]).sort((a,b)=>b-a);
-        const flush = Object.values(suitsVal.reduce((a,b)=>{a[b]=(a[b]||0)+1; return a;},{})).some(v=>v>=5);
-        const counts = vals.reduce((a,b)=>{a[b]=(a[b]||0)+1; return a;},{});
-        const pairs = Object.entries(counts).filter(e=>e[1]>=2).sort((a,b)=>b[0]-a[0]);
-        let straight = false, topStraight = 0, uniqueVals = [...new Set(vals)].sort((a,b)=>b-a);
-        for(let i=0; i<=uniqueVals.length-5; i++) if(uniqueVals[i] - uniqueVals[i+4] === 4) { straight=true; topStraight=uniqueVals[i]; break; }
-        if(!straight && [14,5,4,3,2].every(v=>uniqueVals.includes(v))) { straight=true; topStraight=5; }
-        if(flush && straight) return {rank:9, score:topStraight, name:"Straight Flush"};
-        if(pairs.some(p=>p[1]===4)) return {rank:8, score:pairs.find(p=>p[1]===4)[0], name:"Four of a Kind"};
-        if(pairs.some(p=>p[1]===3) && pairs.length>=2) return {rank:7, score:pairs.find(p=>p[1]===3)[0], name:"Full House"};
-        if(flush) return {rank:6, score:vals[0], name:"Flush"};
-        if(straight) return {rank:5, score:topStraight, name:"Straight"};
-        if(pairs.some(p=>p[1]===3)) return {rank:4, score:pairs.find(p=>p[1]===3)[0], name:"Three of a Kind"};
-        if(pairs.length>=2) return {rank:3, score:pairs[0][0], name:"Two Pair"};
-        if(pairs.length===1) return {rank:2, score:pairs[0][0], name:"One Pair"};
-        return {rank:1, score:vals[0], name:"High Card"};
-    }
-
-    function generateText(pots) {
-        const pc = parseInt(document.getElementById('playerCount').value);
-        const heroPos = document.getElementById('myPosition').value;
-        const stack = parseNum(document.getElementById('heroStack').value);
-        const sb = parseNum(document.getElementById('sb').value);
-        const bb = parseNum(document.getElementById('bb').value);
-        const ante = parseNum(document.getElementById('ante').value);
-        
-        let investments = {};
-        const positions = POS_DATA[pc];
-        positions.forEach(p => investments[p] = ante);
-        if (pc === 2) {
-            investments["SB/BTN"] = (investments["SB/BTN"] || 0) + sb;
-            investments["BB"] = (investments["BB"] || 0) + bb;
-        } else {
-            investments["SB"] = (investments["SB"] || 0) + (positions.includes("SB") ? sb : 0);
-            investments["BB"] = (investments["BB"] || 0) + (positions.includes("BB") ? bb : 0);
-        }
-
-        let text = `<Table>\n${pc}-MAX | ${sb}/${bb}(ante:${ante})\n\n`;
-        text += `<Hero>\n${heroPos} ${gameState.heroHand.join(' ')} Hero ${fmt(stack)}\n\n`;
-
-        ['preflop', 'flop', 'turn', 'river'].forEach((s, idx) => {
-            const currentPot = idx === 0 ? pots.preflop : pots[['preflop', 'flop', 'turn', 'river'][idx-1]];
-            if(s==='preflop') text += `<Preflop>\n`;
-            else if(gameState.history[s].length>0 || gameState.boards[s].length > 0) text += `<${s.toUpperCase()}> Pot : ${fmt(currentPot)}\n${gameState.boards[s].join(' ')}\n`;
-            else return;
-
-            let streetIn = {};
-            if(s === 'preflop') {
-                const order = ["UTG","UTG+1","UTG+2","UTG+3","MP","HJ","CO","BTN","SB/BTN","SB","BB"];
-                const sortedAll = positions.sort((a,b) => order.indexOf(a) - order.indexOf(b));
-                sortedAll.forEach(pos => {
-                    const entries = gameState.history[s].filter(h => h.pos === pos);
-                    if(entries.length > 0) {
-                        entries.forEach(h => {
-                            text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
-                            const val = parseNum(h.amt);
-                            let already = (h.pos === 'BB' ? bb : (h.pos === 'SB' || h.pos === 'SB/BTN' ? sb : 0));
-                            investments[h.pos] = (investments[h.pos] || 0) + Math.max(0, val - (streetIn[h.pos] || already));
-                            streetIn[h.pos] = val;
-                        });
-                    } else if(pos !== 'SB' && pos !== 'BB' && pos !== 'SB/BTN') { text += `${pos} folds\n`; }
-                });
-            } else {
-                gameState.history[s].forEach(h => {
-                    text += `${h.pos} ${h.type} ${h.amt ? fmt(parseNum(h.amt)) : ''}\n`;
-                    const val = parseNum(h.amt);
-                    investments[h.pos] = (investments[h.pos] || 0) + Math.max(0, val - (streetIn[h.pos] || 0));
-                    streetIn[h.pos] = val;
-                });
-            }
-            text += `\n`;
-        });
-
-        const board = [...gameState.boards.flop, ...gameState.boards.turn, ...gameState.boards.river];
-        if(board.length >= 3) {
-            let pts = [{pos: heroPos, hand: gameState.heroHand}];
-            Object.keys(gameState.showdown).forEach(p => { if(gameState.showdown[p].hand?.length === 2) pts.push({pos:p, hand:gameState.showdown[p].hand}); });
-            if(pts.length >= 1) {
-                pts.forEach(p => p.eval = evaluateHand([...p.hand, ...board]));
-                const maxR = Math.max(...pts.map(p=>p.eval.rank));
-                const winnersAtRank = pts.filter(p=>p.eval.rank === maxR).sort((a,b)=>b.eval.score - a.eval.score);
-                const finalWinners = winnersAtRank.filter(p=>p.eval.score === winnersAtRank[0].eval.score);
-                const finalPot = calculateCurrentPot().river;
-                text += `<Showdown / Results>\n`;
-                pts.forEach(p => {
-                    const isWin = finalWinners.some(w => w.pos === p.pos);
-                    const paid = investments[p.pos] || 0;
-                    if(p.pos === heroPos) {
-                        const winAmt = finalPot / finalWinners.length;
-                        text += isWin ? `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-win : ${fmt(winAmt)}(+${fmt(winAmt - paid)})\n` : `${p.pos}: ${p.hand.join(' ')} (${p.eval.name}) Hero-lose : 0(-${fmt(paid)})\n`;
-                    } else { text += `${p.pos}: ${p.hand.join(' ')} (${p.eval.name})\n`; }
-                });
-            }
-        }
-        document.getElementById('output').innerText = text.trim();
-    }
-
     function copyToClipboard() { navigator.clipboard.writeText(document.getElementById('output').innerText).then(() => alert("コピーしました！")); }
+
     const pcSel = document.getElementById('playerCount');
     [10, 9, 8, 7, 6, 5, 4, 3, 2].forEach(i => { let o = document.createElement('option'); o.value=i; o.textContent=i+"人"; if(i==6)o.selected=true; pcSel.appendChild(o); });
     initPositions(); updateUI();
