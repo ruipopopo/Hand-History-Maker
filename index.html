@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Evaluator Pro - Full Version</title>
+    <title>Poker Evaluator Pro - Blinds Split</title>
     <style>
         :root { --primary: #2c3e50; --accent: #e74c3c; --bg: #f0f2f5; --success: #27ae60; --dark: #1a252f; --gray: #95a5a6; --allin: #8e44ad; }
         body { font-family: sans-serif; background: var(--bg); padding: 10px; margin: 0; }
@@ -16,10 +16,13 @@
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         h2 { font-size: 1rem; border-left: 4px solid var(--accent); padding-left: 10px; margin: 25px 0 10px; color: var(--primary); background: #fff5f5; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; }
         .pot-label { font-size: 0.85rem; color: var(--success); font-weight: bold; background: #eafaf1; padding: 2px 8px; border-radius: 4px; border: 1px solid #d5f5e3; }
-        .grid-config { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 10px; margin-bottom: 15px; }
+        
+        /* ブラインド入力セクションの調整 */
+        .grid-config { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .form-group { margin-bottom: 10px; }
-        label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; }
+        label { display: block; font-size: 0.7rem; font-weight: bold; margin-bottom: 3px; color: var(--gray); text-transform: uppercase; }
         select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        
         .card-selector { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; background: #eee; padding: 5px; border-radius: 4px; overflow-x: auto; margin-bottom: 10px; }
         .card-btn { padding: 10px 2px; border: 1px solid #ccc; background: white; cursor: pointer; font-size: 0.65rem; text-align: center; border-radius: 3px; min-width: 30px; }
         .card-btn.selected { background: var(--accent) !important; color: white !important; }
@@ -63,16 +66,15 @@
 
 <div class="container">
     <div class="grid-config">
-        <div class="form-group"><label>人数</label><select id="playerCount" onchange="initPositions(); updateUI();"></select></div>
-        <div class="form-group"><label>SB / BB</label>
-            <div style="display:flex; gap:2px"><input type="number" id="sb" value="1" oninput="updateUI()"><input type="number" id="bb" value="2" oninput="updateUI()"></div>
-        </div>
+        <div class="form-group"><label>Players</label><select id="playerCount" onchange="initPositions(); updateUI();"></select></div>
+        <div class="form-group"><label>SB</label><input type="number" id="sb" value="1" oninput="updateUI()"></div>
+        <div class="form-group"><label>BB</label><input type="number" id="bb" value="2" oninput="updateUI()"></div>
         <div class="form-group"><label>Ante</label><input type="number" id="ante" value="0" oninput="updateUI()"></div>
     </div>
     
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div class="form-group"><label>Hero Stack</label><input type="number" id="heroStack" value="200" oninput="updateUI()"></div>
-        <div class="form-group"><label>Hero Pos</label><select id="myPosition" onchange="updateUI()"></select></div>
+        <div class="form-group"><label>Hero Position</label><select id="myPosition" onchange="updateUI()"></select></div>
     </div>
     
     <h2>Hero Hand</h2>
@@ -90,6 +92,7 @@
 </div>
 
 <script>
+    // --- ロジック定数 ---
     const suits = [{s:'♠', v:1}, {s:'♥', v:2, c:'suit-red'}, {s:'♦', v:3, c:'suit-red'}, {s:'♣', v:4}];
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
     const rankValue = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
@@ -99,6 +102,7 @@
 
     let gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} };
 
+    // --- 基本UI関数 ---
     function toggleModal(show) { document.getElementById('helpModal').style.display = show ? 'block' : 'none'; }
     function resetGame() { if(!confirm("リセットしますか？")) return; gameState = { heroHand: [], boards: {flop:[], turn:[], river:[]}, history: {preflop:[], flop:[], turn:[], river:[]}, activePos: {}, showdown: {} }; initPositions(); updateUI(); }
     function fmt(n) { return isNaN(n) ? "0" : Math.floor(n).toLocaleString(); }
@@ -151,6 +155,7 @@
         generateText();
     }
 
+    // --- ストリート描画 ---
     function renderStreetSections(allPositions) {
         const container = document.getElementById('street-sections'); container.innerHTML = "";
         const { streetPots } = calculateInvestmentsByStreet();
@@ -203,6 +208,7 @@
         });
     }
 
+    // --- 役判定ロジック (SFバグ修正済み) ---
     function evaluateHand(cards) {
         if (cards.length < 5) return {rank:0, score:0, name:""};
         const vMap = cards.map(c => ({v: rankValue[c[0]], s: c.slice(-1)}));
@@ -242,6 +248,7 @@
         return {rank:1, score:uV[0], name:"High Card"};
     }
 
+    // --- テキスト生成 ---
     function generateText() {
         const pc = parseInt(document.getElementById('playerCount').value);
         const heroPos = document.getElementById('myPosition').value;
@@ -289,6 +296,7 @@
         document.getElementById('output').innerText = text.trim();
     }
 
+    // --- カード描画 ---
     function renderHeroSelector() {
         const el = document.getElementById('heroCardSelector'); el.innerHTML = ""; const used = getAllUsedCards();
         suits.forEach(suit => ranks.forEach(rank => {
